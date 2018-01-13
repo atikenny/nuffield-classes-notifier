@@ -129,9 +129,9 @@ async function navigateToClasses({ page, mainPageSelectors, finishedSelector }) 
 }
 
 async function collectClasses({ page, classesPageSelectors }) {
-    const classTitleNodes = await page.$$(classesPageSelectors.classTitle);
-
-    classTitleNodes.forEach(classTitle => {
-        console.log(classTitle.innerText);
+    const titles = await page.$$eval(classesPageSelectors.classTitle, classTitleNodes => {
+        return classTitleNodes.map(classTitle => classTitle.innerText);
     });
+
+    console.log(titles);
 }
