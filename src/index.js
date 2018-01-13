@@ -1,9 +1,21 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 
+const production = process.env.NODE_ENV === 'production';
+const password = process.argv[2];
+
+if (!password) {
+    throw new Error('Please provide password as first argument!');
+}
+
 const config = {
     screenshotsDir: 'screenshots',
-    loginPage: 'https://member.nuffieldhealth.com/bookings/login.asp'
+    loginPage: 'https://member.nuffieldhealth.com/bookings/login.asp',
+    dev: !production,
+    user: {
+        name: 'bartha.attila@uxp.hu',
+        password
+    }
 };
 
 async function getFlowLogger({ screenshotsDir, page, fullPage = true }) {
@@ -30,8 +42,12 @@ function getNavigator({ page, log }) {
     }
 }
 
-(async function main({ screenshotsDir, loginPage }) {
-    const browser = await puppeteer.launch();
+(async function main({ screenshotsDir, loginPage, user, dev = false }) {
+    const browserConfig = {
+        headless: !dev,
+        slowMo: dev ? 100 : 0
+    };
+    const browser = await puppeteer.launch(browserConfig);
     const page = await browser.newPage();
     const log = await getFlowLogger({
         screenshotsDir,
@@ -41,6 +57,10 @@ function getNavigator({ page, log }) {
 
     // LOGIN
     await navigateToPage(loginPage);
+    await page.type('[name=emailaddress]', user.name);
+    await page.type('[name=password]', user.password);
 
-    await browser.close();
+    if (production) {
+        await browser.close();
+    }
 })(config);
