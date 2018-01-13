@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/atikenny/nuffield-classes-notifier/issues"
   },
-  "homepage": "https://github.com/atikenny/nuffield-classes-notifier#readme"
+  "homepage": "https://github.com/atikenny/nuffield-classes-notifier#readme",
+  "dependencies": {
+    "puppeteer": "^1.0.0"
+  }
 }
