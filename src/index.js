@@ -18,6 +18,17 @@ const config = {
     }
 };
 
+const selectors = {
+    loginPage: {
+        username: '[name=emailaddress]',
+        password: '[name=password]',
+        submitButton: '#loginButton'
+    },
+    mainPage: {
+        classesButton: '#mnu_classes'
+    }
+};
+
 async function getFlowLogger({ screenshotsDir, page, fullPage = true }) {
     let step = 0;
     const flowId = Date.now();
@@ -42,7 +53,14 @@ function getNavigator({ page, log }) {
     }
 }
 
-(async function main({ screenshotsDir, loginPage, user, dev = false }) {
+async function login({ page, navigateToPage, loginPage, loginPageSelectors, user }) {
+    await navigateToPage(loginPage);
+    await page.type(loginPageSelectors.username, user.name);
+    await page.type(loginPageSelectors.password, user.password);
+    await page.click(loginPageSelectors.submitButton);
+}
+
+(async function main({ screenshotsDir, loginPage, user, dev = false }, selectors) {
     const browserConfig = {
         headless: !dev,
         slowMo: dev ? 100 : 0
@@ -56,11 +74,16 @@ function getNavigator({ page, log }) {
     const navigateToPage = getNavigator({ page, log });
 
     // LOGIN
-    await navigateToPage(loginPage);
-    await page.type('[name=emailaddress]', user.name);
-    await page.type('[name=password]', user.password);
+    await login({
+        page,
+        navigateToPage,
+        loginPage,
+        loginPageSelectors: selectors.loginPage,
+        user
+    });
+    await log();
 
     if (production) {
         await browser.close();
     }
-})(config);
+})(config, selectors);
