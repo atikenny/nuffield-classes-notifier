@@ -31,7 +31,10 @@ const selectors = {
         classTitle: '.day-spacer',
         classItem: {
             container: '.act',
-            title: '.act_Ttl'
+            name: '.act_Ttl',
+            date: '.act_DT',
+            status: '.act_StatusTxt',
+            fullClass: 'act_full'
         }
     }
 };
@@ -45,13 +48,17 @@ async function getFlowLogger({ screenshotsDir, page, fullPage = true }) {
         fs.mkdir(flowScreenshotsDir);
     }
 
-    return async function log(stepDescription) {
+    return async function log(stepDescription, data) {
         console.log(`Step ${++step}: `, stepDescription);
 
         await page.screenshot({
             path: `${flowScreenshotsDir}/step-${step}.png`,
             fullPage
         });
+
+        if (!production && data) {
+            console.log(`Data: ${JSON.stringify(data)}`);
+        }
     };
 }
 
@@ -96,11 +103,11 @@ function getNavigator({ page, log }) {
     await log('navigated to classes');
 
     // COLLECT CLASSES
-    await collectClasses({
+    const classes = await collectClasses({
         page,
         classesPageSelectors: selectors.classesPage
     });
-    await log('collected classes');
+    await log('collected classes', classes);
 
     if (production) {
         await browser.close();
@@ -133,24 +140,43 @@ async function navigateToClasses({ page, mainPageSelectors, finishedSelector }) 
 }
 
 async function collectClasses({ page, classesPageSelectors }) {
-    const titles = await page.$$eval(classesPageSelectors.classTitle, classTitleNodes => {
-        return classTitleNodes.map(classTitle => classTitle.textContent.trim());
-    });
-
-    const classes = await page.evaluate(classItemSelectors => {
+    return await page.evaluate(classItemSelectors => {
         const classItemNodes = document.querySelectorAll(classItemSelectors.container);
         const classItems = Array.from(classItemNodes);
+        const getFreePlaces = (status) => {
+            return Number(status.replace('There are ', '').replace(' places left in this class', ''));
+        };
+        const getId = (name, day, time) => {
+            return `${day}-${time}-${name}`
+                .toLowerCase()
+                .replace(':', '-')
+                .replace(' ', '_');
+        };
 
         return classItems.map((item, index) => {
             const classItemNode = classItemNodes[index];
-            const titleNode = classItemNode.querySelector(classItemSelectors.title);
-            const title = titleNode.textContent;
+            const nameNode = classItemNode.querySelector(classItemSelectors.name);
+            const name = nameNode.textContent;
+            const dateNode = classItemNode.querySelector(classItemSelectors.date);
+            const date = dateNode.textContent.trim();
+            const day = date.split('    ')[0];
+            const time = date.split('    ')[1];
+            const isFull = classItemNode.classList.contains(classItemSelectors.fullClass);
+            const statusNode = classItemNode.querySelector(classItemSelectors.status);
+            const status = statusNode.textContent;
+            const freePlaces = isFull ? undefined : getFreePlaces(status);
+            const id = getId(name, day, time);
 
             return {
-                title
+                id,
+                name,
+                date,
+                day,
+                time,
+                isFull,
+                status,
+                freePlaces
             };
         });
     }, classesPageSelectors.classItem);
-
-    console.log(classes);
 }
