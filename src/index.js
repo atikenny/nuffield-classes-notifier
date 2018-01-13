@@ -5,7 +5,7 @@ const production = process.env.NODE_ENV === 'production';
 const password = process.argv[2];
 
 if (!password) {
-    throw new Error('Please provide password as first argument!');
+    throw new Error('Please provide password as the first argument!');
 }
 
 const config = {
@@ -38,9 +38,11 @@ async function getFlowLogger({ screenshotsDir, page, fullPage = true }) {
         fs.mkdir(flowScreenshotsDir);
     }
 
-    return async function log() {
+    return async function log(stepDescription) {
+        console.log(`Step ${++step}: `, stepDescription);
+
         await page.screenshot({
-            path: `${flowScreenshotsDir}/step-${++step}.png`,
+            path: `${flowScreenshotsDir}/step-${step}.png`,
             fullPage
         });
     };
@@ -49,7 +51,7 @@ async function getFlowLogger({ screenshotsDir, page, fullPage = true }) {
 function getNavigator({ page, log }) {
     return async function navigateToPage(url) {
         await page.goto(url);
-        await log();
+        await log(`navigated to ${url}`);
     }
 }
 
@@ -60,7 +62,8 @@ async function login({ page, navigateToPage, loginPage, loginPageSelectors, user
     await page.click(loginPageSelectors.submitButton);
 }
 
-(async function main({ screenshotsDir, loginPage, user, dev = false }, selectors) {
+(async function main(config, selectors) {
+    const { screenshotsDir, loginPage, user, dev = false } = config;
     const browserConfig = {
         headless: !dev,
         slowMo: dev ? 100 : 0
@@ -81,7 +84,11 @@ async function login({ page, navigateToPage, loginPage, loginPageSelectors, user
         loginPageSelectors: selectors.loginPage,
         user
     });
-    await log();
+    await log('logged in');
+
+    // NAVIGATE TO CLASSES
+    await page.click(selectors.mainPage.classesButton);
+    await log('navigated to classes');
 
     if (production) {
         await browser.close();
