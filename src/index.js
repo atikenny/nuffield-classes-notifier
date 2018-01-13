@@ -26,6 +26,9 @@ const selectors = {
     },
     mainPage: {
         classesButton: '#mnu_classes'
+    },
+    classesPage: {
+        classTitle: '.day-spacer'
     }
 };
 
@@ -55,13 +58,6 @@ function getNavigator({ page, log }) {
     }
 }
 
-async function login({ page, navigateToPage, loginPage, loginPageSelectors, user }) {
-    await navigateToPage(loginPage);
-    await page.type(loginPageSelectors.username, user.name);
-    await page.type(loginPageSelectors.password, user.password);
-    await page.click(loginPageSelectors.submitButton);
-}
-
 (async function main(config, selectors) {
     const { screenshotsDir, loginPage, user, dev = false } = config;
     const browserConfig = {
@@ -82,15 +78,60 @@ async function login({ page, navigateToPage, loginPage, loginPageSelectors, user
         navigateToPage,
         loginPage,
         loginPageSelectors: selectors.loginPage,
-        user
+        user,
+        finishedSelector: selectors.mainPage.classesButton
     });
     await log('logged in');
 
     // NAVIGATE TO CLASSES
-    await page.click(selectors.mainPage.classesButton);
+    await navigateToClasses({
+        page,
+        mainPageSelectors: selectors.mainPage,
+        finishedSelector: selectors.classesPage.classTitle
+    });
     await log('navigated to classes');
+
+    // COLLECT CLASSES
+    await collectClasses({
+        page,
+        classesPageSelectors: selectors.classesPage
+    });
+    await log('collected classes');
 
     if (production) {
         await browser.close();
     }
 })(config, selectors);
+
+async function login({
+    page,
+    navigateToPage,
+    loginPage,
+    loginPageSelectors,
+    user,
+    finishedSelector
+}) {
+    await navigateToPage(loginPage);
+    await page.type(loginPageSelectors.username, user.name);
+    await page.type(loginPageSelectors.password, user.password);
+
+    return Promise.all([
+        await page.click(loginPageSelectors.submitButton),
+        await page.waitForSelector(finishedSelector)
+    ]);
+}
+
+async function navigateToClasses({ page, mainPageSelectors, finishedSelector }) {
+    await Promise.all([
+        await page.click(mainPageSelectors.classesButton),
+        await page.waitForSelector(finishedSelector)
+    ]);
+}
+
+async function collectClasses({ page, classesPageSelectors }) {
+    const classTitleNodes = await page.$$(classesPageSelectors.classTitle);
+
+    classTitleNodes.forEach(classTitle => {
+        console.log(classTitle.innerText);
+    });
+}
