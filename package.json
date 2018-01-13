@@ -1,0 +1,24 @@
+{
+  "name": "nuffield-classes-notifier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atikenny/nuffield-classes-notifier.git"
+  },
+  "keywords": [
+    "nuffield",
+    "classes",
+    "notifier"
+  ],
+  "author": "Attila Bartha",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/atikenny/nuffield-classes-notifier/issues"
+  },
+  "homepage": "https://github.com/atikenny/nuffield-classes-notifier#readme"
+}
