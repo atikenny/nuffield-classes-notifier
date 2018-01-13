@@ -28,7 +28,11 @@ const selectors = {
         classesButton: '#mnu_classes'
     },
     classesPage: {
-        classTitle: '.day-spacer'
+        classTitle: '.day-spacer',
+        classItem: {
+            container: '.act',
+            title: '.act_Ttl'
+        }
     }
 };
 
@@ -130,8 +134,23 @@ async function navigateToClasses({ page, mainPageSelectors, finishedSelector }) 
 
 async function collectClasses({ page, classesPageSelectors }) {
     const titles = await page.$$eval(classesPageSelectors.classTitle, classTitleNodes => {
-        return classTitleNodes.map(classTitle => classTitle.innerText);
+        return classTitleNodes.map(classTitle => classTitle.textContent.trim());
     });
 
-    console.log(titles);
+    const classes = await page.evaluate(classItemSelectors => {
+        const classItemNodes = document.querySelectorAll(classItemSelectors.container);
+        const classItems = Array.from(classItemNodes);
+
+        return classItems.map((item, index) => {
+            const classItemNode = classItemNodes[index];
+            const titleNode = classItemNode.querySelector(classItemSelectors.title);
+            const title = titleNode.textContent;
+
+            return {
+                title
+            };
+        });
+    }, classesPageSelectors.classItem);
+
+    console.log(classes);
 }
