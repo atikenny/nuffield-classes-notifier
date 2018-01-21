@@ -2,9 +2,10 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 const production = process.env.NODE_ENV === 'production';
-const password = process.argv[2];
+const username = process.env.username;
+const password = process.env.password;
 
-if (!password) {
+if (!username || !password) {
     throw new Error('Please provide password as the first argument!');
 }
 
@@ -13,7 +14,7 @@ const config = {
     loginPage: 'https://member.nuffieldhealth.com/bookings/login.asp',
     dev: !production,
     user: {
-        name: 'bartha.attila@uxp.hu',
+        name: username,
         password
     }
 };
