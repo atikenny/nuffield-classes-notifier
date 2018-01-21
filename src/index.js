@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 
 const production = process.env.NODE_ENV === 'production';
+const takeScreenshot = production;
 const username = process.env.username;
 const password = process.env.password;
 
@@ -45,17 +46,19 @@ async function getFlowLogger({ screenshotsDir, page, fullPage = true }) {
     const flowId = Date.now();
     const flowScreenshotsDir = `./${screenshotsDir}/${flowId}`;
 
-    if (!(await fs.exists(flowScreenshotsDir))) {
+    if (takeScreenshot && !(await fs.exists(flowScreenshotsDir))) {
         fs.mkdir(flowScreenshotsDir);
     }
 
     return async function log(stepDescription, data) {
         console.log(`Step ${++step}: `, stepDescription);
 
-        await page.screenshot({
-            path: `${flowScreenshotsDir}/step-${step}.png`,
-            fullPage
-        });
+        if (takeScreenshot) {
+            await page.screenshot({
+                path: `${flowScreenshotsDir}/step-${step}.png`,
+                fullPage
+            });
+        }
 
         if (!production && data) {
             console.log(`Data: ${JSON.stringify(data)}`);
@@ -70,7 +73,7 @@ function getNavigator({ page, log }) {
     }
 }
 
-(async function main(config, selectors) {
+async function main(config, selectors, callback) {
     const { screenshotsDir, loginPage, user, dev = false } = config;
     const browserConfig = {
         headless: !dev,
@@ -113,7 +116,9 @@ function getNavigator({ page, log }) {
     if (production) {
         await browser.close();
     }
-})(config, selectors);
+
+    callback();
+}
 
 async function login({
     page,
@@ -181,3 +186,9 @@ async function collectClasses({ page, classesPageSelectors }) {
         });
     }, classesPageSelectors.classItem);
 }
+
+exports.handler = (event, context, callback) => {
+    main(config, selectors, () => {
+        callback(null, 'Finished collecting classes!');
+    });
+};
