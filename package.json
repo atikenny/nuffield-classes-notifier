@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "NODE_ENV=production node src/index.js",
-    "dev": "node src/index.js"
+    "dev": "node src/index.js",
+    "build": "babel src/index.js --out-file build/index.js"
   },
   "repository": {
     "type": "git",
@@ -25,5 +26,10 @@
   "homepage": "https://github.com/atikenny/nuffield-classes-notifier#readme",
   "dependencies": {
     "puppeteer": "^1.0.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.1"
   }
 }
