@@ -1,4 +1,4 @@
-const handler = require('./src/handler.js');
+import handler from './src/handler.js';
 
 exports.handler = (event, context, callback) => {
     handler(() => {

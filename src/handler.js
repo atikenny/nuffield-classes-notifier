@@ -1,5 +1,5 @@
-const puppeteer = require('puppeteer');
-const fs = require('fs');
+import puppeteer from 'puppeteer';
+import fs from 'fs';
 
 const production = process.env.NODE_ENV === 'production';
 const takeScreenshot = production;
@@ -245,4 +245,4 @@ const handler = (callback) => {
     main(config, selectors, callback);
 };
 
-module.exports = handler;
+export default handler;
