@@ -156,7 +156,8 @@ const getCookies = () => {
     try {
         return require('./data/cookies.json');
     } catch(error) {
-        console.log(error);
+        console.warn(error);
+        console.warn('Could not load cookies!');
 
         return;
     }
