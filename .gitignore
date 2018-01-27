@@ -1,7 +1,5 @@
 node_modules
 screenshots
 build
-build.zip
 npm-debug.log
-index.js
 src/data/cookies.json

@@ -7,8 +7,7 @@
     "test": "jest",
     "start": "NODE_ENV=production node src/index.js",
     "dev": "node src/index.js",
-    "build": "babel src/index.js --out-file index.js",
-    "zip": "zip -r build.zip index.js node_modules",
+    "build": "babel index.js --out-dir build",
     "deploy": "npm run build && npm run zip"
   },
   "repository": {

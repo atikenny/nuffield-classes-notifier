@@ -241,12 +241,8 @@ async function collectClasses({ page, classesPageSelectors }) {
     }, classesPageSelectors.classItem);
 }
 
-const handler = (event, context, callback) => {
-    main(config, selectors, () => {
-        callback(null, 'Finished collecting classes!');
-    });
+const handler = (callback) => {
+    main(config, selectors, callback);
 };
-
-exports.handler = handler;
 
 module.exports = handler;
