@@ -94,10 +94,15 @@ async function main(config, selectors, callback) {
     });
     const navigateToPage = getNavigator({ page, log });
 
-    // IF ALREADY LOGGED IN GOTO CLASSES
+    // LOAD COOKIES
+    await loadCookies({ page });
+    await log('loaded cookies');
+
+    // GOTO CLASSES
     await navigateToPage(classesPageUrl);
     const url = await page.url();
     
+    // IF NOT LOGGED IN DO THE LOGIN
     if (url !== classesPageUrl) {
         await log('Not logged in yet, navigating to login page!');
 
@@ -112,9 +117,9 @@ async function main(config, selectors, callback) {
         });
         await log('logged in');
 
-        // LOG COOKIES
-        const cookies = await page.cookies();
-        console.log(cookies);
+        // SAVE COOKIES
+        await saveCookies({ page });
+        await log('saved cookies');
 
         // NAVIGATE TO CLASSES
         await navigateToClasses({
@@ -139,6 +144,24 @@ async function main(config, selectors, callback) {
     callback();
 }
 
+async function loadCookies({ page }) {
+    const cookies = getCookies();
+
+    if (cookies) {
+        await page.setCookie(...cookies);
+    }
+}
+
+const getCookies = () => {
+    try {
+        return require('./data/cookies.json');
+    } catch(error) {
+        console.log(error);
+
+        return;
+    }
+};
+
 async function login({
     page,
     navigateToPage,
@@ -155,6 +178,17 @@ async function login({
         await page.click(loginPageSelectors.submitButton),
         await page.waitForSelector(finishedSelector)
     ]);
+}
+
+async function saveCookies({ page }) {
+    const cookies = await page.cookies();
+    
+    await fs.writeFile('./src/data/cookies.json', JSON.stringify(cookies), (error) => {
+        if (error) {
+            console.warn(error);
+            console.warn('Could not save cookies!');
+        }
+    });
 }
 
 async function navigateToClasses({ page, mainPageSelectors, finishedSelector }) {
