@@ -12,7 +12,8 @@ if (!username || !password) {
 
 const config = {
     screenshotsDir: 'screenshots',
-    loginPage: 'https://member.nuffieldhealth.com/bookings/login.asp',
+    loginPageUrl: 'https://member.nuffieldhealth.com/bookings/login.asp',
+    classesPageUrl: 'https://member.nuffieldhealth.com/bookings/myspace/booking.asp',
     dev: !production,
     user: {
         name: username,
@@ -74,7 +75,13 @@ function getNavigator({ page, log }) {
 }
 
 async function main(config, selectors, callback) {
-    const { screenshotsDir, loginPage, user, dev = false } = config;
+    const {
+        screenshotsDir,
+        loginPageUrl,
+        classesPageUrl,
+        user,
+        dev = false
+    } = config;
     const browserConfig = {
         headless: !dev,
         slowMo: dev ? 100 : 0
@@ -87,24 +94,36 @@ async function main(config, selectors, callback) {
     });
     const navigateToPage = getNavigator({ page, log });
 
-    // LOGIN
-    await login({
-        page,
-        navigateToPage,
-        loginPage,
-        loginPageSelectors: selectors.loginPage,
-        user,
-        finishedSelector: selectors.mainPage.classesButton
-    });
-    await log('logged in');
+    // IF ALREADY LOGGED IN GOTO CLASSES
+    await navigateToPage(classesPageUrl);
+    const url = await page.url();
+    
+    if (url !== classesPageUrl) {
+        await log('Not logged in yet, navigating to login page!');
 
-    // NAVIGATE TO CLASSES
-    await navigateToClasses({
-        page,
-        mainPageSelectors: selectors.mainPage,
-        finishedSelector: selectors.classesPage.classTitle
-    });
-    await log('navigated to classes');
+        // LOGIN
+        await login({
+            page,
+            navigateToPage,
+            loginPageUrl,
+            loginPageSelectors: selectors.loginPage,
+            user,
+            finishedSelector: selectors.mainPage.classesButton
+        });
+        await log('logged in');
+
+        // LOG COOKIES
+        const cookies = await page.cookies();
+        console.log(cookies);
+
+        // NAVIGATE TO CLASSES
+        await navigateToClasses({
+            page,
+            mainPageSelectors: selectors.mainPage,
+            finishedSelector: selectors.classesPage.classTitle
+        });
+        await log('navigated to classes');
+    }
 
     // COLLECT CLASSES
     const classes = await collectClasses({
@@ -123,12 +142,12 @@ async function main(config, selectors, callback) {
 async function login({
     page,
     navigateToPage,
-    loginPage,
+    loginPageUrl,
     loginPageSelectors,
     user,
     finishedSelector
 }) {
-    await navigateToPage(loginPage);
+    await navigateToPage(loginPageUrl);
     await page.type(loginPageSelectors.username, user.name);
     await page.type(loginPageSelectors.password, user.password);
 
@@ -187,8 +206,12 @@ async function collectClasses({ page, classesPageSelectors }) {
     }, classesPageSelectors.classItem);
 }
 
-exports.handler = (event, context, callback) => {
+const handler = (event, context, callback) => {
     main(config, selectors, () => {
         callback(null, 'Finished collecting classes!');
     });
 };
+
+exports.handler = handler;
+
+module.exports = handler;
