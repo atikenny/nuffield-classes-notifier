@@ -2,14 +2,7 @@
   "name": "nuffield-classes-notifier",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "jest",
-    "start": "NODE_ENV=production node src/index.js",
-    "dev": "node src/index.js",
-    "build": "webpack",
-    "deploy": "npm run build && npm run zip"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/atikenny/nuffield-classes-notifier.git"
@@ -24,16 +17,5 @@
   "bugs": {
     "url": "https://github.com/atikenny/nuffield-classes-notifier/issues"
   },
-  "homepage": "https://github.com/atikenny/nuffield-classes-notifier#readme",
-  "dependencies": {
-    "puppeteer": "^1.0.0"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-preset-env": "^1.6.1",
-    "webpack": "^3.10.0",
-    "webpack-node-externals": "^1.6.0"
-  }
+  "homepage": "https://github.com/atikenny/nuffield-classes-notifier#readme"
 }

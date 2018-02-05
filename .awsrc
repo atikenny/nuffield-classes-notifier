@@ -1,0 +1,5 @@
+{
+    "region": "eu-west-2",
+    "runtime": "6.10",
+    "handler": "index.handler"
+}

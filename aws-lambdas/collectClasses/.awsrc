@@ -1,0 +1,5 @@
+{
+    "functionName": "collectClasses",
+    "memory": 512,
+    "timeout": 30
+}
