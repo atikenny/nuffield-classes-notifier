@@ -10,6 +10,10 @@ exports.handler = (event, context, callback) => {
     if (event.Records) {
         const newClasses = getNewClasses(event.Records);
         
+        if (!newClasses.length) {
+            callback(null, 'No new classes');
+        }
+        
         newClasses.sort(sortByDateAndTime);
         
         sendClassesInEmail(newClasses)
